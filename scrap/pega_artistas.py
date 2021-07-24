@@ -6,6 +6,7 @@
 
 import requests
 from bs4 import BeautifulSoup
+from time import sleep
 
 
 _temp_ = []
@@ -98,6 +99,8 @@ def pega_artistas_na_pagina(inicial):
     baseUrl_cifras = 'https://www.cifras.com.br/letra/'+inicial
     response = requests.get(baseUrl_cifras)
 
+    sleep(10)
+
     artistas_pagina = BeautifulSoup(
         response.text, 'html.parser'
         ).find(
@@ -109,19 +112,23 @@ def pega_artistas_na_pagina(inicial):
         bandeira = artista.find('img')['src']
         pais = paises[bandeira]
         
+        #print('>>>>>>>INICIO:')
+        #print('Link:', link)
+        #print('Artista:', nome)
+        #print('Pais:', pais)
+
         foto, estilo, musicas = pega_detalhes(link)
 
         artista_atual = ExtrairArtistas(link, nome, pais, foto, estilo, musicas)
 
+        print(vars(artista_atual))
+        print('\n\n')
+
         _temp_.append(artista_atual)
 
 
-       # print('Artista:', nome)
-       # print('Link:', link)
-       # print('Pais:', pais)
         
         
-       # print('\n\n')
 
 
 def pega_detalhes(link):
@@ -132,17 +139,21 @@ def pega_detalhes(link):
         ).find(
             'div', attrs={'id': 'artista-info'})
 
+    sleep(10)
+
     foto = artista_detalhe.find('img')['src']
     detalhes = artista_detalhe.find('p', attrs={'class':'infomustit'})
     musicas = detalhes.find('span').text.strip()
     remover = detalhes.find('span').extract()
     estilo = detalhes.text.strip()
 
-    return (foto, estilo, musicas)
-
     #print('Foto:', foto)
     #print('Estilo:', estilo)
     #print('Musicas:', musicas)
+    #print('\n\n\n\n')
+
+    return (foto, estilo, musicas)
+
 
 def start():
     for inicial in iniciais:
