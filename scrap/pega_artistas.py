@@ -1,17 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
 
-# > EXEMPLO
-# - Obtendo produtos do Mercado Livre a partir de uma busca realizada pelo usuário
-
 import requests
 from bs4 import BeautifulSoup
 from time import sleep
+import csv
 
 
 _temp_ = []
 links = []
-iniciais = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
+iniciais = ['b', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
                 'v', 'w', 'x', 'y', 'z', '[0-9]']
 paises = {
     'https://www.e-chords.com/t/f1.gif': 'Brasil',
@@ -85,6 +83,8 @@ paises = {
     'https://www.e-chords.com/t/f68.gif': 'desconhecido',
 }
 
+aux = 0
+
 #Python class for declaring movie attributes. 
 class ExtrairArtistas(object):      
     def __init__(self, link, nome,  pais, foto, estilo, musicas ):
@@ -99,7 +99,7 @@ def pega_links_dos_artistas(inicial):
     baseUrl_cifras = 'https://www.cifras.com.br/letra/'+inicial
     response = requests.get(baseUrl_cifras)
 
-    sleep(10)
+    sleep(5)
 
     artistas_links_pagina = BeautifulSoup(
         response.text, 'html.parser'
@@ -107,7 +107,7 @@ def pega_links_dos_artistas(inicial):
             'table', attrs={'class': 'pages'}).find_all('p')
 
     for artista in artistas_links_pagina:
-        links.append = artista.find('a')['href']
+        links.append(artista.find('a')['href']) 
 
     return(links)
 
@@ -119,7 +119,7 @@ def pega_artistas_na_pagina(inicial):
     baseUrl_cifras = 'https://www.cifras.com.br/letra/'+inicial
     response = requests.get(baseUrl_cifras)
 
-    sleep(10)
+    sleep(3)
 
     artistas_pagina = BeautifulSoup(
         response.text, 'html.parser'
@@ -132,19 +132,30 @@ def pega_artistas_na_pagina(inicial):
         bandeira = artista.find('img')['src']
         pais = paises[bandeira]
         
-        #print('>>>>>>>INICIO:')
-        #print('Link:', link)
-        #print('Artista:', nome)
-        #print('Pais:', pais)
+        print('>>>>>>>INICIO:')
+        print('Link:', link)
+        print('Artista:', nome)
+        print('Pais:', pais)
 
         foto, estilo, musicas = pega_detalhes(link)
 
-        artista_atual = ExtrairArtistas(link, nome, pais, foto, estilo, musicas)
+        print('Foto:', foto)
+        print('Estilo:', estilo)
+        print('Musicas:', musicas)
 
-        print(vars(artista_atual))
+        artista_atual = ExtrairArtistas(link, nome, pais, estilo, musicas, foto)
+
+        #print(vars(artista_atual))
         print('\n\n')
 
         _temp_.append(artista_atual)
+
+        global aux
+        aux = aux + 1;
+        if aux == 10:
+            break
+
+    return _temp_
 
 
         
@@ -159,13 +170,18 @@ def pega_detalhes(link):
         ).find(
             'div', attrs={'id': 'artista-info'})
 
-    sleep(10)
+    sleep(3)
 
-    foto = artista_detalhe.find('img')['src']
+    el_foto = artista_detalhe.find('img')
+    foto = el_foto['src'] if el_foto else ''
+
     detalhes = artista_detalhe.find('p', attrs={'class':'infomustit'})
-    musicas = detalhes.find('span').text.strip()
+
+    el_musicas = detalhes.find('span')
+    musicas = el_musicas.text.strip() if el_musicas else ''
+    
     remover = detalhes.find('span').extract()
-    estilo = detalhes.text.strip()
+    estilo = detalhes.text.strip() if detalhes.text.strip() else ''
 
     #print('Foto:', foto)
     #print('Estilo:', estilo)
@@ -177,12 +193,21 @@ def pega_detalhes(link):
 
 def start():
     for inicial in iniciais:
-        pega_artistas_na_pagina(inicial)
+        pag = pega_artistas_na_pagina(inicial)
+        write_data(pag, inicial+'_results.csv')
 
 #pega_artistas_na_pagina('a')
 
 #pega_artistas_na_pagina('a')
-teste = pega_links_dos_artistas('a')
-print(vars(teste))
+#teste = pega_links_dos_artistas('a')
+#print(dir(teste))
+
+start()
+
+def write_data(data,name):
+    file_name =name
+    with open(file_name,'a',errors='ignore',newline='') as f:
+        f_csv =csv.writer(f)
+        f_csv.writerows(data)
 
 #pega_detalhes('https://www.cifras.com.br/a-balladeer')

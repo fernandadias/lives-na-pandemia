@@ -7,12 +7,14 @@
 import requests
 from bs4 import BeautifulSoup
 from time import sleep
+import pandas as pd
 
 links = []
+todos_os_links = []
 iniciais = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
                 'v', 'w', 'x', 'y', 'z', '[0-9]']
 
-def pega_links_dos_artistas(inicial):
+def pega_links_por_inicial(inicial):
     baseUrl_cifras = 'https://www.cifras.com.br/letra/'+inicial
     response = requests.get(baseUrl_cifras)
 
@@ -32,10 +34,16 @@ def pega_links_dos_artistas(inicial):
 
 
 
-def start():
+def pega_todos_os_links():
     for inicial in iniciais:
-        pega_links_dos_artistas(inicial)
+        pega_links_por_inicial(inicial)
 
-start()
+d = pega_links_por_inicial('a')
+
+df = pd.DataFrame(data={'link': d})
+df.to_csv('./teste.csv', sep=',',index=False)
+
+
+todos_os_links = pega_todos_os_links()
 
 #pega_detalhes('https://www.cifras.com.br/a-balladeer')
